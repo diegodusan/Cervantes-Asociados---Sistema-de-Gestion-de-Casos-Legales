@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
 const casoRoutes = require('./routes/casoRoutes');
@@ -7,6 +8,7 @@ const casoRoutes = require('./routes/casoRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // Servir frontend desde carpeta public

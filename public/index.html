@@ -3,50 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Cervantes Asociados</title>
+    <title>Cervantes Asociados</title>
+    <!-- Material Symbols (Rounded style is softer, more Apple-like) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js para las gráficas visuales -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Override to use rounded symbols */
+        .material-symbols-outlined { font-family: 'Material Symbols Rounded', sans-serif; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
 </head>
 <body>
     <div id="app" class="dashboard-layout hidden">
         
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar glass-panel">
+        <!-- Sidebar Navigation (macOS style) -->
+        <aside class="sidebar">
             <div class="brand">
-                <div class="brand-icon">CA</div>
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined" style="color: white; font-size: 1.25rem;">gavel</span>
+                </div>
                 Cervantes
             </div>
             <ul class="nav-menu">
                 <li class="nav-item active" data-view="casos-view">
-                    📊 Tablero de Casos
+                    <span class="material-symbols-outlined">folder_open</span>
+                    Expedientes
                 </li>
                 <li class="nav-item" data-view="clientes-view" id="nav-clientes" style="display: none;">
-                    👥 Gestión de Clientes
+                    <span class="material-symbols-outlined">group</span>
+                    Clientes
                 </li>
             </ul>
             <div class="user-profile">
-                <p id="userNameDisplay" style="font-weight: 600; margin-bottom: 5px;">Usuario</p>
-                <p id="userRoleDisplay" style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 15px;">Rol</p>
-                <button id="logoutBtn" class="btn btn-outline" style="width: 100%; font-size: 0.85rem;">Cerrar Sesión</button>
+                <p id="userNameDisplay">Usuario</p>
+                <p id="userRoleDisplay">Rol</p>
+                <button id="logoutBtn" class="btn btn-outline" style="width: 100%; border-radius: 8px;">Cerrar Sesión</button>
             </div>
         </aside>
 
-        <!-- Main Content Area (SPA Views) -->
+        <!-- Main Content Area -->
         <main class="main-content">
             
             <!-- VISTA: CASOS -->
             <div id="casos-view" class="view-section">
                 <div class="d-flex justify-between align-center mb-4">
-                    <h2>Resumen de Casos</h2>
-                    <button id="btnNewCaso" class="btn btn-primary">+ Nuevo Caso</button>
+                    <h2>Expedientes</h2>
+                    <button id="btnNewCaso" class="btn btn-primary" style="border-radius: 20px;">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px; font-size: 1.1rem;">add</span>
+                        Nuevo Expediente
+                    </button>
                 </div>
 
                 <!-- Tarjetas Estadísticas -->
                 <div class="stats-grid">
                     <div class="glass-panel stat-card">
                         <span class="stat-title">Abiertos</span>
-                        <span class="stat-value" style="color: var(--info)" id="count-abierto">0</span>
+                        <span class="stat-value" style="color: var(--apple-blue)" id="count-abierto">0</span>
                     </div>
                     <div class="glass-panel stat-card">
                         <span class="stat-title">En Progreso</span>
@@ -65,22 +78,22 @@
                 <!-- Gráficas Visuales -->
                 <div class="charts-grid">
                     <div class="glass-panel">
-                        <h3 class="stat-title mb-4">Distribución por Estatus</h3>
+                        <h3 class="stat-title mb-4" style="text-transform: none; font-size: 1rem; color: var(--text-primary);">Distribución de Estatus</h3>
                         <canvas id="casosChart"></canvas>
                     </div>
                     <div class="glass-panel d-flex flex-column justify-between">
                         <div>
-                            <h3 class="stat-title mb-4">Buscador Inteligente</h3>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Escribe un folio o cliente (ej. CA-2026, Juan)...">
-                            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 10px;">
-                                La tabla inferior se actualizará automáticamente.
-                            </p>
+                            <h3 class="stat-title mb-4" style="text-transform: none; font-size: 1rem; color: var(--text-primary);">Buscador Inteligente</h3>
+                            <div style="position: relative;">
+                                <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 12px; color: var(--text-secondary); font-size: 1.1rem;">search</span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por folio o cliente..." style="padding-left: 36px; border-radius: 12px; background-color: var(--apple-bg); border: none;">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tabla de Casos -->
-                <div class="glass-panel data-table-container">
+                <div class="glass-panel data-table-container" style="padding: 0;">
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -103,17 +116,20 @@
             <div id="clientes-view" class="view-section hidden">
                 <div class="d-flex justify-between align-center mb-4">
                     <h2>Directorio de Clientes</h2>
-                    <button id="btnNewCliente" class="btn btn-primary">+ Nuevo Cliente</button>
+                    <button id="btnNewCliente" class="btn btn-primary" style="border-radius: 20px;">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px; font-size: 1.1rem;">person_add</span>
+                        Nuevo Cliente
+                    </button>
                 </div>
 
-                <div class="glass-panel data-table-container">
+                <div class="glass-panel data-table-container" style="padding: 0;">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nombre Completo</th>
+                                <th>Nombre</th>
                                 <th>Teléfono</th>
-                                <th>Correo Electrónico</th>
+                                <th>Correo</th>
                                 <th style="text-align: right;">Acciones</th>
                             </tr>
                         </thead>
@@ -131,36 +147,36 @@
     
     <!-- Modal: Caso (Crear/Editar) -->
     <div class="modal-overlay" id="modalCaso">
-        <div class="modal-content glass-panel">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalCasoTitle">Registrar Nuevo Caso</h3>
-                <button class="close-modal" id="closeModalCaso">&times;</button>
+                <h3 id="modalCasoTitle">Expediente</h3>
+                <button type="button" class="close-modal closeModalBtn">&times;</button>
             </div>
             <form id="formCaso">
                 <input type="hidden" id="casoId">
                 <div class="form-group">
-                    <label for="casoClienteId">Cliente</label>
-                    <select id="casoClienteId" class="form-control" required>
-                        <option value="">Seleccione un cliente...</option>
+                    <label for="casoClienteId">Cliente Asociado</label>
+                    <select id="casoClienteId" class="form-control" required style="border-radius: 8px;">
+                        <option value="">Seleccionar...</option>
                         <!-- Dinámico -->
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="casoDescripcion">Descripción del Caso</label>
-                    <textarea id="casoDescripcion" class="form-control" rows="3" required></textarea>
+                    <label for="casoDescripcion">Descripción</label>
+                    <textarea id="casoDescripcion" class="form-control" rows="3" required style="border-radius: 8px; resize: none;"></textarea>
                 </div>
                 <div class="form-group" id="casoEstatusGroup" style="display: none;">
                     <label for="casoEstatus">Estatus</label>
-                    <select id="casoEstatus" class="form-control">
+                    <select id="casoEstatus" class="form-control" style="border-radius: 8px;">
                         <option value="Abierto">Abierto</option>
                         <option value="En Progreso">En Progreso</option>
                         <option value="Pausado">Pausado</option>
                         <option value="Cerrado">Cerrado</option>
                     </select>
                 </div>
-                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 30px;">
-                    <button type="button" class="btn btn-outline closeModalBtn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-outline closeModalBtn" style="border: none; background: transparent; color: var(--text-secondary);">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 600;">Guardar</button>
                 </div>
             </form>
         </div>
@@ -168,28 +184,28 @@
 
     <!-- Modal: Cliente (Crear/Editar) -->
     <div class="modal-overlay" id="modalCliente">
-        <div class="modal-content glass-panel">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalClienteTitle">Registrar Cliente</h3>
-                <button class="close-modal" id="closeModalCliente">&times;</button>
+                <h3 id="modalClienteTitle">Cliente</h3>
+                <button type="button" class="close-modal closeModalBtn">&times;</button>
             </div>
             <form id="formCliente">
                 <input type="hidden" id="clienteId">
                 <div class="form-group">
-                    <label for="clienteNombre">Nombre Completo</label>
-                    <input type="text" id="clienteNombre" class="form-control" required>
+                    <label for="clienteNombre">Nombre o Razón Social</label>
+                    <input type="text" id="clienteNombre" class="form-control" required style="border-radius: 8px;">
                 </div>
                 <div class="form-group">
                     <label for="clienteTelefono">Teléfono</label>
-                    <input type="text" id="clienteTelefono" class="form-control">
+                    <input type="text" id="clienteTelefono" class="form-control" style="border-radius: 8px;">
                 </div>
                 <div class="form-group">
                     <label for="clienteEmail">Correo Electrónico</label>
-                    <input type="email" id="clienteEmail" class="form-control">
+                    <input type="email" id="clienteEmail" class="form-control" style="border-radius: 8px;">
                 </div>
-                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 30px;">
-                    <button type="button" class="btn btn-outline closeModalBtn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-outline closeModalBtn" style="border: none; background: transparent; color: var(--text-secondary);">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 600;">Guardar</button>
                 </div>
             </form>
         </div>

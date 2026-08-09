@@ -8,15 +8,15 @@ const escHtml = (unsafe) => {
          .replace(/'/g, "&#039;");
 };
 
-// Toast Notifications
+// Toast Notifications (iOS Native Style)
 const showToast = (message, type = 'success') => {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    // Icon
-    const icon = type === 'success' ? '✓' : '⚠';
-    toast.innerHTML = `<span style="font-weight:bold; font-size:1.2rem;">${icon}</span> <span>${escHtml(message)}</span>`;
+    // Icon (Material Symbols)
+    const icon = type === 'success' ? 'check_circle' : 'error';
+    toast.innerHTML = `<span class="material-symbols-outlined toast-icon" style="font-size: 1.5rem; font-variation-settings: 'FILL' 1;">${icon}</span> <span>${escHtml(message)}</span>`;
     
     container.appendChild(toast);
     
@@ -48,6 +48,11 @@ const getUserName = () => {
 };
 
 // API Fetch Wrapper
+let API_BASE = '';
+if (window.location.protocol === 'file:') {
+    API_BASE = 'http://localhost:3000';
+}
+
 const apiFetch = async (url, options = {}) => {
     const token = getToken();
     const headers = {
@@ -56,14 +61,14 @@ const apiFetch = async (url, options = {}) => {
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch(`/api${url}`, { ...options, headers });
+    const response = await fetch(`${API_BASE}/api${url}`, { ...options, headers });
     
     // Expired or invalid token logic
     if (response.status === 401 || response.status === 403) {
-        if (window.location.pathname !== '/login.html') {
+        if (!window.location.pathname.endsWith('login.html')) {
             clearToken();
             localStorage.removeItem('user');
-            window.location.href = '/login.html';
+            window.location.href = 'login.html';
         }
     }
     return response;
@@ -92,7 +97,7 @@ if (window.location.pathname.endsWith('login.html')) {
             if (res.ok) {
                 setToken(data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.href = '/';
+                window.location.href = 'index.html';
             } else {
                 showToast(data.message || 'Credenciales inválidas', 'error');
             }
@@ -109,7 +114,7 @@ if (window.location.pathname.endsWith('login.html')) {
 if (window.location.pathname === '/' || window.location.pathname.endsWith('index.html')) {
     const role = getUserRole();
     if (!getToken() || !role) {
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
     } else {
         // App Init
         document.getElementById('app').classList.remove('hidden');
@@ -124,7 +129,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
         document.getElementById('logoutBtn').addEventListener('click', () => {
             clearToken();
             localStorage.removeItem('user');
-            window.location.href = '/login.html';
+            window.location.href = 'login.html';
         });
 
         // 1. SPA Navigation Logic
@@ -181,7 +186,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                     labels: ['Abiertos', 'En Progreso', 'Pausados', 'Cerrados'],
                     datasets: [{
                         data: [stats['Abierto'], stats['En Progreso'], stats['Pausado'], stats['Cerrado']],
-                        backgroundColor: ['#38bdf8', '#fbbf24', '#f87171', '#34d399'],
+                        backgroundColor: ['#0071E3', '#FF9500', '#FF3B30', '#34C759'],
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -189,9 +194,9 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#94a3b8' } }
+                        legend: { position: 'bottom', labels: { color: '#6B7280', font: { family: 'Inter' } } }
                     },
-                    cutout: '70%'
+                    cutout: '75%'
                 }
             });
         };
@@ -242,15 +247,21 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                 const tr = document.createElement('tr');
                 const badgeClass = caso.estatus === 'En Progreso' ? 'badge-progreso' : `badge-${caso.estatus.toLowerCase()}`;
                 
+                const formattedDate = new Date(caso.fechas).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
                 tr.innerHTML = `
                     <td><strong>${escHtml(caso.folio)}</strong></td>
                     <td>${escHtml(caso.cliente_nombre || 'Desconocido')}</td>
                     <td>${escHtml(caso.descripcion)}</td>
-                    <td>${escHtml(new Date(caso.fechas).toLocaleDateString())}</td>
+                    <td>${escHtml(formattedDate)}</td>
                     <td><span class="badge ${badgeClass}">${escHtml(caso.estatus)}</span></td>
                     <td style="text-align: right;">
-                        <button class="action-btn" onclick="editCaso(${caso.id})">✏️</button>
-                        <button class="action-btn delete" onclick="deleteCaso(${caso.id})">🗑️</button>
+                        <button class="action-btn" onclick="editCaso(${caso.id})" title="Editar">
+                            <span class="material-symbols-outlined">edit_square</span>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteCaso(${caso.id})" title="Eliminar">
+                            <span class="material-symbols-outlined" style="color: var(--danger)">delete</span>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -357,8 +368,12 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                     <td>${escHtml(cli.telefono || '-')}</td>
                     <td>${escHtml(cli.email || '-')}</td>
                     <td style="text-align: right;">
-                        <button class="action-btn" onclick="editCliente(${cli.id})">✏️</button>
-                        <button class="action-btn delete" onclick="deleteCliente(${cli.id})">🗑️</button>
+                        <button class="action-btn" onclick="editCliente(${cli.id})" title="Editar">
+                            <span class="material-symbols-outlined">edit_square</span>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteCliente(${cli.id})" title="Eliminar">
+                            <span class="material-symbols-outlined" style="color: var(--danger)">delete</span>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
