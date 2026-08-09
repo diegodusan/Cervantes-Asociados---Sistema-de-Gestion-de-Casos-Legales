@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cervantes Asociados</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js para las gráficas visuales -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app" class="dashboard-layout hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <div class="brand-icon">CA</div>
+                Cervantes
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="casos-view">
+                    📊 Tablero de Casos
+                </li>
+                <li class="nav-item" data-view="clientes-view" id="nav-clientes" style="display: none;">
+                    👥 Gestión de Clientes
+                </li>
+            </ul>
+            <div class="user-profile">
+                <p id="userNameDisplay" style="font-weight: 600; margin-bottom: 5px;">Usuario</p>
+                <p id="userRoleDisplay" style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 15px;">Rol</p>
+                <button id="logoutBtn" class="btn btn-outline" style="width: 100%; font-size: 0.85rem;">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area (SPA Views) -->
+        <main class="main-content">
+            
+            <!-- VISTA: CASOS -->
+            <div id="casos-view" class="view-section">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>Resumen de Casos</h2>
+                    <button id="btnNewCaso" class="btn btn-primary">+ Nuevo Caso</button>
+                </div>
+
+                <!-- Tarjetas Estadísticas -->
+                <div class="stats-grid">
+                    <div class="glass-panel stat-card">
+                        <span class="stat-title">Abiertos</span>
+                        <span class="stat-value" style="color: var(--info)" id="count-abierto">0</span>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <span class="stat-title">En Progreso</span>
+                        <span class="stat-value" style="color: var(--warning)" id="count-progreso">0</span>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <span class="stat-title">Pausados</span>
+                        <span class="stat-value" style="color: var(--danger)" id="count-pausado">0</span>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <span class="stat-title">Cerrados</span>
+                        <span class="stat-value" style="color: var(--success)" id="count-cerrado">0</span>
+                    </div>
+                </div>
+
+                <!-- Gráficas Visuales -->
+                <div class="charts-grid">
+                    <div class="glass-panel">
+                        <h3 class="stat-title mb-4">Distribución por Estatus</h3>
+                        <canvas id="casosChart"></canvas>
+                    </div>
+                    <div class="glass-panel d-flex flex-column justify-between">
+                        <div>
+                            <h3 class="stat-title mb-4">Buscador Inteligente</h3>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Escribe un folio o cliente (ej. CA-2026, Juan)...">
+                            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 10px;">
+                                La tabla inferior se actualizará automáticamente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Casos -->
+                <div class="glass-panel data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Cliente</th>
+                                <th>Descripción</th>
+                                <th>Fecha</th>
+                                <th>Estatus</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="casosTableBody">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VISTA: CLIENTES -->
+            <div id="clientes-view" class="view-section hidden">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>Directorio de Clientes</h2>
+                    <button id="btnNewCliente" class="btn btn-primary">+ Nuevo Cliente</button>
+                </div>
+
+                <div class="glass-panel data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre Completo</th>
+                                <th>Teléfono</th>
+                                <th>Correo Electrónico</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientesTableBody">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- MODALES (CRUD) -->
+    
+    <!-- Modal: Caso (Crear/Editar) -->
+    <div class="modal-overlay" id="modalCaso">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3 id="modalCasoTitle">Registrar Nuevo Caso</h3>
+                <button class="close-modal" id="closeModalCaso">&times;</button>
+            </div>
+            <form id="formCaso">
+                <input type="hidden" id="casoId">
+                <div class="form-group">
+                    <label for="casoClienteId">Cliente</label>
+                    <select id="casoClienteId" class="form-control" required>
+                        <option value="">Seleccione un cliente...</option>
+                        <!-- Dinámico -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="casoDescripcion">Descripción del Caso</label>
+                    <textarea id="casoDescripcion" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group" id="casoEstatusGroup" style="display: none;">
+                    <label for="casoEstatus">Estatus</label>
+                    <select id="casoEstatus" class="form-control">
+                        <option value="Abierto">Abierto</option>
+                        <option value="En Progreso">En Progreso</option>
+                        <option value="Pausado">Pausado</option>
+                        <option value="Cerrado">Cerrado</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 30px;">
+                    <button type="button" class="btn btn-outline closeModalBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cliente (Crear/Editar) -->
+    <div class="modal-overlay" id="modalCliente">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3 id="modalClienteTitle">Registrar Cliente</h3>
+                <button class="close-modal" id="closeModalCliente">&times;</button>
+            </div>
+            <form id="formCliente">
+                <input type="hidden" id="clienteId">
+                <div class="form-group">
+                    <label for="clienteNombre">Nombre Completo</label>
+                    <input type="text" id="clienteNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="clienteTelefono">Teléfono</label>
+                    <input type="text" id="clienteTelefono" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="clienteEmail">Correo Electrónico</label>
+                    <input type="email" id="clienteEmail" class="form-control">
+                </div>
+                <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 30px;">
+                    <button type="button" class="btn btn-outline closeModalBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+</html>
