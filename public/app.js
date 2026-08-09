@@ -1,11 +1,11 @@
 // 1. Utilidades Globales
 const escHtml = (unsafe) => {
     return (unsafe || "").toString()
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 };
 
 // Toast Notifications (iOS Native Style)
@@ -13,13 +13,13 @@ const showToast = (message, type = 'success') => {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     // Icon (Material Symbols)
     const icon = type === 'success' ? 'check_circle' : 'error';
     toast.innerHTML = `<span class="material-symbols-outlined toast-icon" style="font-size: 1.5rem; font-variation-settings: 'FILL' 1;">${icon}</span> <span>${escHtml(message)}</span>`;
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.classList.add('fade-out');
         setTimeout(() => toast.remove(), 300);
@@ -38,7 +38,7 @@ const getUserRole = () => {
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return payload.rol; // 'Administrador' o 'Abogado'
-    } catch(e) {
+    } catch (e) {
         return null;
     }
 };
@@ -62,7 +62,7 @@ const apiFetch = async (url, options = {}) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const response = await fetch(`${API_BASE}/api${url}`, { ...options, headers });
-    
+
     // Expired or invalid token logic
     if (response.status === 401 || response.status === 403) {
         if (!window.location.pathname.endsWith('login.html')) {
@@ -77,7 +77,7 @@ const apiFetch = async (url, options = {}) => {
 // ======================== LÓGICA DE LOGIN ========================
 if (window.location.pathname.endsWith('login.html')) {
     const form = document.getElementById('loginForm');
-    
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = form.querySelector('button');
@@ -93,7 +93,7 @@ if (window.location.pathname.endsWith('login.html')) {
                 body: JSON.stringify({ email, password })
             });
             const data = await res.json();
-            
+
             if (res.ok) {
                 setToken(data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
@@ -141,7 +141,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                 // Update active nav
                 navItems.forEach(n => n.classList.remove('active'));
                 item.classList.add('active');
-                
+
                 // Show view
                 const targetView = item.getAttribute('data-view');
                 views.forEach(v => {
@@ -159,7 +159,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
         const setupModal = (modalId, closeIds) => {
             const modal = document.getElementById(modalId);
             const closeFns = () => modal.classList.remove('active');
-            
+
             closeIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('click', closeFns);
@@ -177,7 +177,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
         let casosChartInstance = null;
         const renderChart = (stats) => {
             const ctx = document.getElementById('casosChart').getContext('2d');
-            
+
             if (casosChartInstance) casosChartInstance.destroy();
 
             casosChartInstance = new Chart(ctx, {
@@ -215,7 +215,26 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
             }
         };
 
-        const fetchClientesForSelect = async () => {
+        window.quickChangeStatus = async (id, newStatus) => {
+            try {
+                const res = await apiFetch(`/casos/${id}/estatus`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ estatus: newStatus })
+                });
+                
+                if (res.ok) {
+                    showToast(`Estatus cambiado a: ${newStatus}`, 'success');
+                    loadCasos(document.getElementById('searchInput').value);
+                } else {
+                    const error = await res.json();
+                    showToast(error.message || 'Error al cambiar estatus', 'error');
+                }
+            } catch (err) {
+                showToast(err.message || 'Error de conexión', 'error');
+            }
+        };
+
+        const loadClientesForSelect = async (selectedId = null) => {
             const res = await apiFetch(`/clientes`);
             if (res.ok) {
                 globalClientesList = await res.json();
@@ -229,7 +248,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
 
         const updateCasosStats = (casos) => {
             const stats = { 'Abierto': 0, 'En Progreso': 0, 'Pausado': 0, 'Cerrado': 0 };
-            casos.forEach(c => { if(stats[c.estatus] !== undefined) stats[c.estatus]++; });
+            casos.forEach(c => { if (stats[c.estatus] !== undefined) stats[c.estatus]++; });
 
             document.getElementById('count-abierto').textContent = stats['Abierto'];
             document.getElementById('count-progreso').textContent = stats['En Progreso'];
@@ -246,8 +265,22 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
             casos.forEach(caso => {
                 const tr = document.createElement('tr');
                 const badgeClass = caso.estatus === 'En Progreso' ? 'badge-progreso' : `badge-${caso.estatus.toLowerCase()}`;
-                
+
                 const formattedDate = new Date(caso.fechas).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                let nextStatusBtn = '';
+                if (caso.estatus === 'Abierto') {
+                    nextStatusBtn = `<button class="action-btn" onclick="quickChangeStatus(${caso.id}, 'En Progreso')" title="Iniciar (En Progreso)"><span class="material-symbols-outlined" style="color: var(--apple-blue);">play_circle</span></button>`;
+                } else if (caso.estatus === 'En Progreso') {
+                    nextStatusBtn = `
+                        <button class="action-btn" onclick="quickChangeStatus(${caso.id}, 'Pausado')" title="Pausar"><span class="material-symbols-outlined" style="color: var(--warning);">pause_circle</span></button>
+                        <button class="action-btn" onclick="quickChangeStatus(${caso.id}, 'Cerrado')" title="Finalizar"><span class="material-symbols-outlined" style="color: var(--success);">check_circle</span></button>
+                    `;
+                } else if (caso.estatus === 'Pausado') {
+                    nextStatusBtn = `<button class="action-btn" onclick="quickChangeStatus(${caso.id}, 'En Progreso')" title="Reanudar"><span class="material-symbols-outlined" style="color: var(--apple-blue);">play_circle</span></button>`;
+                } else if (caso.estatus === 'Cerrado') {
+                    nextStatusBtn = `<button class="action-btn" onclick="quickChangeStatus(${caso.id}, 'Abierto')" title="Reabrir Caso"><span class="material-symbols-outlined" style="color: var(--text-secondary);">replay</span></button>`;
+                }
 
                 tr.innerHTML = `
                     <td><strong>${escHtml(caso.folio)}</strong></td>
@@ -255,7 +288,8 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
                     <td>${escHtml(caso.descripcion)}</td>
                     <td>${escHtml(formattedDate)}</td>
                     <td><span class="badge ${badgeClass}">${escHtml(caso.estatus)}</span></td>
-                    <td style="text-align: right;">
+                    <td style="text-align: right; white-space: nowrap;">
+                        ${nextStatusBtn}
                         <button class="action-btn" onclick="editCaso(${caso.id})" title="Editar">
                             <span class="material-symbols-outlined">edit_square</span>
                         </button>
@@ -300,14 +334,14 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
 
             await fetchClientesForSelect();
             document.getElementById('casoClienteId').value = caso.cliente_id;
-            
+
             modalCaso.classList.add('active');
         };
 
         window.deleteCaso = async (id) => {
-            if(confirm("¿Estás seguro de eliminar este caso? Esta acción no se puede deshacer.")) {
+            if (confirm("¿Estás seguro de eliminar este caso? Esta acción no se puede deshacer.")) {
                 const res = await apiFetch(`/casos/${id}`, { method: 'DELETE' });
-                if(res.ok) {
+                if (res.ok) {
                     showToast('Caso eliminado correctamente', 'success');
                     loadCasos(document.getElementById('searchInput').value);
                 } else {
@@ -389,7 +423,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
 
         window.editCliente = (id) => {
             const cli = globalClientes.find(c => c.id === id);
-            if(!cli) return;
+            if (!cli) return;
             document.getElementById('clienteId').value = cli.id;
             document.getElementById('clienteNombre').value = cli.nombre;
             document.getElementById('clienteTelefono').value = cli.telefono;
@@ -399,7 +433,7 @@ if (window.location.pathname === '/' || window.location.pathname.endsWith('index
         };
 
         window.deleteCliente = async (id) => {
-            if(confirm("¿Eliminar cliente? Los casos asociados podrían perder su referencia principal.")) {
+            if (confirm("¿Eliminar cliente? Los casos asociados podrían perder su referencia principal.")) {
                 const res = await apiFetch(`/clientes/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     showToast('Cliente eliminado', 'success');

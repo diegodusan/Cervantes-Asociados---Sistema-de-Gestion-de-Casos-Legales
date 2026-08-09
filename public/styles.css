@@ -97,7 +97,7 @@ h1, h2, h3, h4 {
 }
 
 .form-group label {
-    display: none; /* Apple often uses placeholders for simple login, but we'll hide label visually if needed, or keep it tiny */
+    display: block; /* Removed display: none to improve form clarity */
     margin-bottom: 0.5rem;
     font-size: 0.75rem;
     font-weight: 600;

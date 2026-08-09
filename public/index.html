@@ -154,19 +154,20 @@
             </div>
             <form id="formCaso">
                 <input type="hidden" id="casoId">
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;">Complete los datos a continuación para registrar o actualizar el expediente.</p>
                 <div class="form-group">
-                    <label for="casoClienteId">Cliente Asociado</label>
+                    <label for="casoClienteId">Cliente Asociado al Expediente</label>
                     <select id="casoClienteId" class="form-control" required style="border-radius: 8px;">
-                        <option value="">Seleccionar...</option>
+                        <option value="">Seleccione el cliente titular...</option>
                         <!-- Dinámico -->
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="casoDescripcion">Descripción</label>
-                    <textarea id="casoDescripcion" class="form-control" rows="3" required style="border-radius: 8px; resize: none;"></textarea>
+                    <label for="casoDescripcion">Descripción Legal del Asunto</label>
+                    <textarea id="casoDescripcion" class="form-control" rows="3" required style="border-radius: 8px; resize: none;" placeholder="Ej: Demanda laboral por despido injustificado contra Empresa S.A. de C.V."></textarea>
                 </div>
                 <div class="form-group" id="casoEstatusGroup" style="display: none;">
-                    <label for="casoEstatus">Estatus</label>
+                    <label for="casoEstatus">Estatus Operativo</label>
                     <select id="casoEstatus" class="form-control" style="border-radius: 8px;">
                         <option value="Abierto">Abierto</option>
                         <option value="En Progreso">En Progreso</option>
@@ -191,17 +192,18 @@
             </div>
             <form id="formCliente">
                 <input type="hidden" id="clienteId">
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;">Ingrese los datos de contacto corporativos o personales del cliente.</p>
                 <div class="form-group">
-                    <label for="clienteNombre">Nombre o Razón Social</label>
-                    <input type="text" id="clienteNombre" class="form-control" required style="border-radius: 8px;">
+                    <label for="clienteNombre">Nombre Completo o Razón Social</label>
+                    <input type="text" id="clienteNombre" class="form-control" required style="border-radius: 8px;" placeholder="Ej: Juan Pérez / Inmobiliaria Sur S.A.">
                 </div>
                 <div class="form-group">
-                    <label for="clienteTelefono">Teléfono</label>
-                    <input type="text" id="clienteTelefono" class="form-control" style="border-radius: 8px;">
+                    <label for="clienteTelefono">Teléfono de Contacto (Móvil u Oficina)</label>
+                    <input type="text" id="clienteTelefono" class="form-control" style="border-radius: 8px;" placeholder="Ej: +52 555 123 4567">
                 </div>
                 <div class="form-group">
-                    <label for="clienteEmail">Correo Electrónico</label>
-                    <input type="email" id="clienteEmail" class="form-control" style="border-radius: 8px;">
+                    <label for="clienteEmail">Correo Electrónico Principal</label>
+                    <input type="email" id="clienteEmail" class="form-control" style="border-radius: 8px;" placeholder="Ej: contacto@empresa.com">
                 </div>
                 <div class="d-flex gap-3" style="justify-content: flex-end; margin-top: 24px;">
                     <button type="button" class="btn btn-outline closeModalBtn" style="border: none; background: transparent; color: var(--text-secondary);">Cancelar</button>
